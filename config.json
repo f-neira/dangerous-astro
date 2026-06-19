@@ -1,5 +1,5 @@
 {
-  "apiUrl": "http://dangerous-api-prod:8000/v1/shows",
+  "apiUrl": "http://dangerous-api-dev:8000/v1/shows",
   "monthLabels": [
     "ene",
     "feb",
