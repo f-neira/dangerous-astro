@@ -1,0 +1,169 @@
+<div class="contact-modal" data-contact-modal aria-hidden="true">
+	<button class="contact-modal__backdrop" type="button" data-contact-close aria-label="Cerrar"></button>
+	<div class="contact-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+		<button class="contact-modal__close" type="button" data-contact-close aria-label="Cerrar">
+			&times;
+		</button>
+		<h3 id="contact-modal-title">Información de Contacto</h3>
+		<p>
+			Para mas informacion puedes contactarnos en nuestras redes sociales o escribirnos a nuestro correo
+			<a href="mailto:contact@dangerous.cl">contact@dangerous.cl</a>.
+		</p>
+	</div>
+</div>
+
+<script>
+	let cleanupContact: (() => void) | undefined;
+
+	const setupContact = () => {
+		cleanupContact?.();
+
+		const modal = document.querySelector("[data-contact-modal]");
+		if (!modal) return;
+
+		const openButtons = document.querySelectorAll("[data-contact-open]");
+		const closeButtons = modal.querySelectorAll("[data-contact-close]");
+
+		const openModal = () => {
+			modal.classList.add("is-open");
+			modal.setAttribute("aria-hidden", "false");
+		};
+
+		const closeModal = () => {
+			modal.classList.remove("is-open");
+			modal.setAttribute("aria-hidden", "true");
+		};
+
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape" && modal.classList.contains("is-open")) {
+				closeModal();
+			}
+		};
+
+		openButtons.forEach((button) => button.addEventListener("click", openModal));
+		closeButtons.forEach((button) => button.addEventListener("click", closeModal));
+		document.addEventListener("keydown", onKeyDown);
+
+		cleanupContact = () => {
+			openButtons.forEach((button) => button.removeEventListener("click", openModal));
+			closeButtons.forEach((button) => button.removeEventListener("click", closeModal));
+			document.removeEventListener("keydown", onKeyDown);
+		};
+	};
+
+	document.addEventListener("astro:page-load", setupContact);
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", setupContact, { once: true });
+	} else {
+		setupContact();
+	}
+	document.addEventListener("astro:before-swap", () => cleanupContact?.());
+</script>
+
+<style>
+	.contact-modal {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s ease;
+		z-index: 80;
+	}
+
+	.contact-modal.is-open {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.contact-modal__backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(6px);
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+
+	.contact-modal__dialog {
+		position: relative;
+		width: min(520px, 90vw);
+		background: #0f0f0f;
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 16px;
+		padding: 28px 26px;
+		box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+		color: #ffffff;
+		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		text-align: left;
+		z-index: 1;
+	}
+
+	.contact-modal__dialog h3 {
+		margin: 0 0 12px;
+		font-size: 1.3rem;
+		letter-spacing: 0.08rem;
+		text-transform: uppercase;
+		font-family: Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+	}
+
+	.contact-modal__dialog p {
+		margin: 0;
+		font-size: 0.98rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.contact-modal__dialog a {
+		color: #ffffff;
+		text-decoration: none;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+		transition: color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.contact-modal__dialog a:hover,
+	.contact-modal__dialog a:focus-visible {
+		color: #5d0cff;
+		border-color: #5d0cff;
+	}
+
+	.contact-modal__close {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+		border: none;
+		background: transparent;
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 1.6rem;
+		cursor: pointer;
+		transition: color 0.2s ease, transform 0.2s ease;
+	}
+
+	.contact-modal__close:hover,
+	.contact-modal__close:focus-visible {
+		color: #ffffff;
+		transform: scale(1.05);
+	}
+
+	@media (max-width: 768px) {
+		.contact-modal__dialog {
+			padding: 24px 20px;
+			text-align: center;
+		}
+
+		.contact-modal__dialog h3 {
+			font-size: 1.1rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.contact-modal,
+		.contact-modal__close,
+		.contact-modal__dialog a {
+			transition: none;
+		}
+	}
+</style>

@@ -1,0 +1,193 @@
+--- 
+import config from "../../config.json"
+
+const SHOWS_API_URL = config.apiUrl;
+const API_TOKEN = import.meta.env.API_TOKEN;
+const monthLabels = config.monthLabels;
+const weekdayLabels = config.weekdayLabels;
+
+const parseDateParts = (dateValue: unknown) => {
+	if (typeof dateValue !== "string") return null;
+	const [yearStr, monthStr, dayStr] = dateValue.split("-");
+	const year = Number(yearStr);
+	const month = Number(monthStr);
+	const day = Number(dayStr);
+	if (!year || !month || !day) return null;
+	return { year, month, day };
+};
+
+const mapShow = (raw: any) => {
+	const parts = parseDateParts(raw?.date);
+	const date = parts ? new Date(Date.UTC(parts.year, parts.month - 1, parts.day)) : null;
+	const month = parts ? monthLabels[parts.month - 1] ?? "" : "";
+	const day = parts ? String(parts.day).padStart(2, "0") : "";
+	const weekday = date ? weekdayLabels[date.getUTCDay()] ?? "" : "";
+	const time = typeof raw?.time === "string" ? raw.time.slice(0, 5) : "";
+	const displayTime = [weekday, time].filter(Boolean).join(", ");
+
+	return {
+		id: raw?.id,
+		month,
+		day,
+		city: raw?.city ?? "",
+		country: raw?.country ?? "",
+		venue: raw?.venue ?? "",
+		displayTime,
+	};
+};
+
+let nextShow: any = null;
+
+try {
+	const headers: Record<string, string> = {};
+	if (API_TOKEN) {
+		headers.Authorization = `Bearer ${API_TOKEN}`;
+	}
+	const response = await fetch(SHOWS_API_URL, { headers });
+	if (response.ok) {
+		const data = await response.json();
+		const shows = Array.isArray(data?.results) ? data.results.map(mapShow) : [];
+		nextShow = shows[0] ?? null;
+	} else {
+		console.error(`Shows API error: ${response.status}`);
+	}
+} catch (error) {
+	console.error("Shows API error:", error);
+}
+---
+
+{nextShow && (
+	<aside class="next-show-modal" aria-label="Proxima fecha de show">
+		<p class="next-show-title">Próxima fecha de show</p>
+		<div class="next-show-body">
+			<div class="show-date-card" aria-hidden="true">
+				<span class="show-month">{nextShow.month}</span>
+				<span class="show-day">{nextShow.day}</span>
+			</div>
+			<div class="show-info">
+				<h3>
+					{nextShow.city + " " || nextShow.country || "Show"}
+					{nextShow.city + " " && nextShow.country && (
+						<span class="show-country"> {nextShow.country}</span>
+					)}
+				</h3>
+				<p class="show-venue">{nextShow.venue}</p>
+				<p class="show-meta">
+					<span>{nextShow.displayTime}</span>
+				</p>
+			</div>
+		</div>
+		<a class="next-show-link" href="/shows">Ver shows</a>
+	</aside>
+)}
+
+<style>
+	.next-show-modal {
+		position: absolute;
+		left: clamp(18px, 6vw, 140px);
+		top: clamp(18px, 10vh, 140px);
+		z-index: 20;
+		width: clamp(220px, 28vw, 340px);
+		padding: 1.1rem 1.2rem;
+		background: rgba(20, 20, 20, 0.7);
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 16px;
+		backdrop-filter: blur(6px);
+		box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+		color: #fff;
+	}
+
+	.next-show-title {
+		margin: 0 0 0.9rem 0;
+		font-size: 0.95rem;
+		letter-spacing: 0.12rem;
+		text-transform: uppercase;
+		font-family: Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+		color: #fff;
+	}
+
+	.next-show-body {
+		display: grid;
+		grid-template-columns: 72px 1fr;
+		gap: 0.9rem;
+		align-items: center;
+	}
+
+	.show-date-card {
+		width: 72px;
+		height: 72px;
+		border-radius: 12px;
+		background: #1c1c1c;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.show-month {
+		text-transform: uppercase;
+		font-size: 0.85rem;
+		letter-spacing: 0.1rem;
+		color: rgba(255, 255, 255, 0.75);
+	}
+
+	.show-day {
+		font-size: 2rem;
+		line-height: 1;
+		color: #fff;
+	}
+
+	.show-info h3 {
+		font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+		margin: 0 0 0.15rem 0;
+		font-weight: 700;
+		letter-spacing: 0.02rem;
+	}
+
+	.show-venue {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.75);
+		font-size: 0.95rem;
+		letter-spacing: 0.01rem;
+	}
+
+	.show-meta {
+		margin: 0.3rem 0 0;
+		color: rgba(255, 255, 255, 0.6);
+		letter-spacing: 0.01rem;
+		font-size: 0.9rem;
+	}
+
+	.show-country {
+		color: rgba(255, 255, 255, 0.7);
+		font-weight: 400;
+	}
+
+	.next-show-link {
+		display: inline-block;
+		margin-top: 0.9rem;
+		font-size: 0.9rem;
+		letter-spacing: 0.18rem;
+		text-transform: uppercase;
+		text-decoration: none;
+		font-weight: 700;
+		color: #fff;
+		opacity: 0.5;
+		transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+
+	.next-show-link:hover,
+	.next-show-link:focus-visible {
+		opacity: 1;
+		transform: translateX(2px);
+	}
+
+	@media (max-width: 768px) {
+		.next-show-modal {
+			left: 16px;
+			right: 16px;
+			width: auto;
+			top: 16px;
+		}
+	}
+</style>

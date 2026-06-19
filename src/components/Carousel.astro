@@ -1,0 +1,170 @@
+---
+import { Image } from "astro:assets";
+import portada1 from '../assets/PORTADA/dangerous-030.jpg';
+import portada2 from '../assets/PORTADA/dangerous-062.jpg';
+import portada3 from '../assets/PORTADA/dangerous-107.jpg';
+import NextShowModal from "./NextShowModal.astro";
+
+const images = [
+	{ src: portada1, alt: 'Portada 1' },
+	{ src: portada2, alt: 'Portada 2' },
+	{ src: portada3, alt: 'Portada 3' }
+];
+---
+
+<div class="carousel-container">
+	<NextShowModal />
+	<div class="carousel-slides">
+		{images.map((image, index) => (
+			<Image 
+				src={image.src} 
+				alt={image.alt}
+				class={`carousel-slide${index === 0 ? ' active' : ''}`}
+				data-slide={index}
+				loading="eager"
+				decoding="async"
+				sizes="100vw"
+				widths={[480, 768, 1024, 1280, 1600, 1920]}
+			/>
+		))}
+	</div>
+	<!--
+	<div class="carousel-indicators">
+		{images.map((_, index) => (
+			<div 
+				class={`indicator ${index === 0 ? 'active' : ''}`}
+				data-slide={index}
+			></div>
+		))}
+	</div>
+	-->
+</div>
+
+<script>
+	let intervalId: ReturnType<typeof setInterval> | undefined;
+
+	const setupCarousel = () => {
+		const container = document.querySelector('.carousel-container');
+		if (!container || container.getAttribute('data-ready') === 'true') {
+			return;
+		}
+
+		const slides = container.querySelectorAll<HTMLImageElement>('.carousel-slide');
+		const indicators = container.querySelectorAll<HTMLDivElement>('.indicator');
+		const totalSlides = slides.length;
+		let currentSlide = 0;
+
+		if (totalSlides === 0) {
+			return;
+		}
+
+		container.setAttribute('data-ready', 'true');
+
+		function showSlide(n: number) {
+			currentSlide = (n + totalSlides) % totalSlides;
+
+			slides.forEach((slide) => {
+				slide.classList.remove('active');
+			});
+			slides[currentSlide].classList.add('active');
+
+			indicators.forEach((indicator) => {
+				indicator.classList.remove('active');
+			});
+			indicators[currentSlide]?.classList.add('active');
+		}
+
+		intervalId = setInterval(() => {
+			showSlide(currentSlide + 1);
+		}, 7000);
+
+		showSlide(0);
+	};
+
+	const cleanupCarousel = () => {
+		if (intervalId) {
+			clearInterval(intervalId);
+			intervalId = undefined;
+		}
+	};
+
+	document.addEventListener('astro:page-load', setupCarousel);
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', setupCarousel);
+	} else {
+		setupCarousel();
+	}
+	document.addEventListener('astro:before-swap', cleanupCarousel);
+</script>
+
+<style>
+	.carousel-container {
+		width: 100%;
+		height: 85vh;
+		position: relative;
+		overflow: hidden;
+		background-color: #000;
+	}
+
+	.carousel-slides {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
+
+	.carousel-slide {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0;
+		transition: opacity 0.8s ease-in-out;
+	}
+
+	.carousel-slide.active {
+		opacity: 1;
+	}
+
+	.carousel-indicators {
+		position: absolute;
+		bottom: 20px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		gap: 8px;
+		z-index: 10;
+	}
+
+	.indicator {
+		width: 40px;
+		height: 2px;
+		background-color: rgba(255, 255, 255, 0.2);
+		transition: all 0.3s ease;
+		cursor: pointer;
+	}
+
+	.indicator:hover {
+		background-color: rgba(255, 255, 255, 0.4);
+	}
+
+	.indicator.active {
+		background-color: rgba(255, 255, 255, 0.8);
+		width: 50px;
+	}
+
+	@media (max-width: 768px) {
+		.carousel-container {
+			height: calc(100vh - var(--nav-height));
+		}
+
+		.indicator {
+			width: 30px;
+		}
+
+		.indicator.active {
+			width: 40px;
+		}
+	}
+</style>

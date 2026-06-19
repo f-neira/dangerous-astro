@@ -1,0 +1,169 @@
+---
+import { Image } from "astro:assets";
+import Layout from '../layouts/Layout.astro';
+import dangerous107 from '../assets/PORTADA/dangerous-107.jpg';
+
+const aboutContent = await import('../assets/about.md');
+const { Content, frontmatter } = aboutContent;
+const closingLine = frontmatter?.closing;
+---
+
+<Layout 
+	title="Próximos Shows"
+	description="Conoce a Dangerous: historia, integrantes y el peligro."
+	canonical="https://dangerous.cl/about"
+>
+	<main>
+		<section id="about" class="section about-section">
+			<div class="section-wrapper">
+				<h2>Sobre Nosotros</h2>
+				
+				<div class="content-container">
+					<div class="info-section">
+						<div class="info-content">
+							<Content />
+						</div>
+					</div>
+					
+					<div class="image-section">
+						<Image
+							src={dangerous107}
+							alt="Concierto Peligroso"
+							class="about-image"
+							loading="eager"
+							fetchpriority="high"
+							decoding="async"
+							sizes="(max-width: 768px) 100vw, 860px"
+							widths={[360, 480, 560, 720, 860, 1024, 1280]}
+						/>
+					</div>
+					{closingLine ? <p class="closing-line">{closingLine}</p> : null}
+				</div>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	:global(body) {
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		color: #333;
+		line-height: 1.6;
+		background: #000;
+	}
+
+	main {
+		min-height: calc(100vh - 200px);
+	}
+
+	.section {
+		min-height: 60vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 3.5rem 1.25rem 4rem;
+		scroll-behavior: smooth;
+	}
+
+	.about-section {
+		background: #000;
+		color: white;
+	}
+
+	.section-wrapper {
+		max-width: 1200px;
+		width: 100%;
+	}
+
+	.section h2 {
+		font-size: clamp(2.2rem, 5vw, 3.2rem);
+		margin-bottom: 2rem;
+		text-align: center;
+		letter-spacing: 0.05rem;
+		font-family: "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+	}
+
+	.content-container {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+		align-items: center;
+	}
+
+	.info-section {
+		width: 100%;
+		max-width: 860px;
+	}
+
+	:global(.info-content p) {
+		font-size: 1.1rem;
+		margin-bottom: 1.75rem;
+		line-height: 1.8;
+	}
+
+	:global(.info-content p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.image-section {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		max-width: 860px;
+	}
+
+	.about-image {
+		width: 100%;
+		max-width: 860px;
+		height: auto;
+		object-fit: cover;
+		display: block;
+		border-radius: 18px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	}
+
+	.closing-line {
+		margin: 0;
+		text-align: left;
+		font-size: 1.1rem;
+		line-height: 1.8;
+		font-weight: 400;
+		width: 100%;
+		max-width: 860px;
+		align-self: center;
+		display: list-item;
+		list-style-position: inside;
+	}
+
+	.closing-line::marker {
+		content: "- ";
+	}
+
+	@media (max-width: 768px) {
+		.section {
+			padding: 3rem 1rem 3.5rem;
+		}
+
+		.section h2 {
+			font-size: 2rem;
+		}
+
+		.content-container {
+			gap: 2rem;
+		}
+
+		:global(.info-content p) {
+			font-size: 1rem;
+		}
+
+		.closing-line {
+			font-size: 1rem;
+		}
+
+		.about-image {
+			height: auto;
+			max-width: 420px;
+		}
+	}
+</style>

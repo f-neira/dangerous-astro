@@ -1,0 +1,92 @@
+---
+// Modal fijo de contacto
+---
+
+<div class="contact-float" aria-label="Contacto">
+	<div class="contact-float-content">
+		<p class="contact-float-title">Contacto</p>
+		<p class="contact-float-message">
+			Para mas informacion puedes contactarnos en nuestras redes sociales o escribirnos a nuestro correo
+			<a class="contact-float-email" href="mailto:contact@dangerous.cl">contact@dangerous.cl</a>.
+		</p>
+	</div>
+</div>
+
+<style>
+	.contact-float {
+		--float-width: clamp(240px, 22vw, 320px);
+		--float-height: 150px;
+		position: fixed;
+		right: clamp(32px, 8vw, 180px);
+		bottom: clamp(28px, 7vh, 140px);
+		z-index: 900;
+		background: rgba(0, 0, 0, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 16px;
+		backdrop-filter: blur(6px);
+		box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
+		color: #ffffff;
+		font-family: Impact, sans-serif;
+		width: var(--float-width);
+		height: var(--float-height);
+		transition: opacity 0.3s ease, transform 0.3s ease;
+	}
+
+	.contact-float-content {
+		padding: 18px 22px 16px;
+		text-align: center;
+	}
+
+	.contact-float-title {
+		margin: 0 0 10px 0;
+		font-size: 0.95rem;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		color: #ffffff;
+	}
+
+	.contact-float-message {
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.6;
+		color: #ffffff;
+		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+	}
+
+	.contact-float-email {
+		color: #ffffff;
+		text-decoration: none;
+		transition: color 0.2s ease;
+		overflow-wrap: anywhere;
+	}
+
+	.contact-float-email:hover {
+		color: #f2c94c;
+	}
+
+	@media (max-width: 600px) {
+		.contact-float {
+			position: static;
+			left: auto;
+			right: auto;
+			top: auto;
+			bottom: auto;
+			transform: none;
+			width: min(92vw, 320px);
+			margin: 0;
+		}
+
+		.contact-float-content {
+			padding: 14px;
+		}
+
+		.contact-float-title {
+			font-size: 0.85rem;
+		}
+
+		.contact-float-message {
+			font-size: 0.85rem;
+			line-height: 1.5;
+		}
+	}
+</style>

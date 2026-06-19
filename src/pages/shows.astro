@@ -1,0 +1,398 @@
+---
+import Layout from "../layouts/Layout.astro";
+import config from "../../config.json"
+
+const SHOWS_API_URL = config.apiUrl;
+const API_TOKEN = import.meta.env.API_TOKEN;
+const monthLabels = config.monthLabels;
+const weekdayLabels = config.weekdayLabels;
+
+const parseDateParts = (dateValue: unknown) => {
+	if (typeof dateValue !== "string") return null;
+	const [yearStr, monthStr, dayStr] = dateValue.split("-");
+	const year = Number(yearStr);
+	const month = Number(monthStr);
+	const day = Number(dayStr);
+	if (!year || !month || !day) return null;
+	return { year, month, day };
+};
+
+const mapShow = (raw: any) => {
+	const parts = parseDateParts(raw?.date);
+	const date = parts ? new Date(Date.UTC(parts.year, parts.month - 1, parts.day)) : null;
+	const month = parts ? monthLabels[parts.month - 1] ?? "" : "";
+	const day = parts ? String(parts.day).padStart(2, "0") : "";
+	const weekday = date ? weekdayLabels[date.getUTCDay()] ?? "" : "";
+	const time = typeof raw?.time === "string" ? raw.time.slice(0, 5) : "";
+	const displayTime = [weekday, time].filter(Boolean).join(", ");
+
+	return {
+		id: raw?.id,
+		month,
+		day,
+		city: raw?.city ?? "",
+		country: raw?.country ?? "",
+		venue: raw?.venue ?? "",
+		weekday,
+		time,
+		displayTime,
+		tickets: raw?.tickets_url ?? "",
+		instagram: raw?.instagram_post_url ?? "",
+	};
+};
+
+let shows = [];
+
+try {
+	const headers: Record<string, string> = {};
+	if (API_TOKEN) {
+		headers.Authorization = `Bearer ${API_TOKEN}`;
+	}
+	const response = await fetch(SHOWS_API_URL, { headers });
+	if (!response.ok) {
+		console.error(`Shows API error: ${response.status}`);
+	} else {
+		const data = await response.json();
+		shows = Array.isArray(data?.results) ? data.results.map(mapShow) : [];
+	}
+} catch (error) {
+	console.error("Shows API error:", error);
+}
+---
+
+
+
+<Layout 
+	title="Próximos Shows"
+	description="Revisa las próximas fechas de shows, ciudades y tickets oficiales."
+	canonical="https://dangerous.cl/shows"
+>
+	<main>
+		<!-- Shows Section -->
+		<section id="shows" class="section shows-section">
+			<div class="section-content">
+				<h2>Próximos Shows</h2>
+				<div class="shows-table">
+					{shows.length > 0 ? (
+						shows.map((show: any, index: number) => {
+							const locationPrimary = show.city || show.country || "Show";
+							const locationSecondary = show.city && show.country ? show.country : "";
+							const showLabel = locationSecondary ? `${show.city} ${show.country}` : locationPrimary;
+
+							return (
+								<article class="show-row" style={`--delay: ${index * 90}ms`}>
+									<div class="show-date-card">
+										<span class="show-month">{show.month}</span>
+										<span class="show-day">{show.day}</span>
+									</div>
+									<div class="show-info">
+										<h3 aria-label={showLabel}>
+											{locationPrimary}
+											{locationSecondary && <span class="show-country"> {locationSecondary}</span>}
+										</h3>
+										<p class="show-venue">{show.venue}</p>
+										<p class="show-meta">
+											<span>{show.displayTime}</span>
+										</p>
+									</div>
+									<div class="show-actions">
+										{show.tickets && (
+											<a href={show.tickets} target="_blank" rel="noreferrer" class="btn btn-tickets">
+												TICKETS
+											</a>
+										)}
+										{show.instagram && (
+											<a
+												href={show.instagram}
+												target="_blank"
+												rel="noreferrer"
+												class="btn btn-ig"
+												aria-label={`Instagram: ${showLabel}`}
+											>
+												<svg class="ig-icon" viewBox="0 0 24 24" aria-hidden="true">
+													<path
+														d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2A3.8 3.8 0 1 1 8.2 12 3.81 3.81 0 0 1 12 8.2zm0 2a1.8 1.8 0 1 0 1.8 1.8A1.8 1.8 0 0 0 12 10.2zm5-2.9a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"
+													/>
+												</svg>
+												<span class="sr-only">Instagram</span>
+											</a>
+										)}
+									</div>
+								</article>
+							);
+						})
+					) : (
+						<div class="no-shows">
+							<p>No hay shows programados en este momento.</p>
+						</div>
+					)}
+				</div>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	:global(body) {
+		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		color: #f5f5f5;
+		line-height: 1.6;
+		background: #000;
+	}
+
+	main {
+		min-height: calc(100vh - 200px);
+	}
+
+	.section {
+		min-height: 60vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 4rem 2rem 5rem;
+		scroll-behavior: smooth;
+	}
+
+	.shows-section {
+		--ink: #f5f5f5;
+		--muted: rgba(245, 245, 245, 0.7);
+		--surface: #141414;
+		--surface-dark: #1c1c1c;
+		background: #000;
+		color: #fff;
+	}
+
+	.section-content {
+		max-width: 920px;
+		width: 100%;
+	}
+
+	.section h2 {
+		font-size: clamp(2.2rem, 5vw, 3.2rem);
+		margin-bottom: 2rem;
+		text-align: center;
+		color: #fff;
+		letter-spacing: 0.05rem;
+		font-family: "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+	}
+
+	.shows-table {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.show-row {
+		display: grid;
+		grid-template-columns: 90px 1fr auto;
+		align-items: center;
+		gap: 1.5rem;
+		padding: 1.2rem 1.4rem;
+		background: transparent;
+		border-radius: 12px;
+		border: none;
+		box-shadow: none;
+		backdrop-filter: none;
+		animation: row-enter 600ms ease forwards;
+		opacity: 0;
+		transform: translateY(18px);
+		animation-delay: var(--delay);
+	}
+
+	.show-row:hover {
+		transform: translateY(0);
+	}
+
+	.show-date-card {
+		width: 86px;
+		height: 86px;
+		border-radius: 12px;
+		background: var(--surface-dark);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		border: none;
+		box-shadow: none;
+	}
+
+	.show-month {
+		text-transform: uppercase;
+		font-size: 0.95rem;
+		letter-spacing: 0.1rem;
+		color: rgba(255, 255, 255, 0.75);
+	}
+
+	.show-day {
+		font-size: 2.3rem;
+		line-height: 1;
+		color: #fff;
+	}
+
+	.show-info h3 {
+		font-size: clamp(1.4rem, 3vw, 1.8rem);
+		margin: 0 0 0.1rem 0;
+		font-weight: 700;
+		letter-spacing: 0.02rem;
+		text-transform: none;
+		overflow-wrap: anywhere;
+	}
+
+	.show-country {
+		color: rgba(255, 255, 255, 0.7);
+		font-weight: 400;
+	}
+
+	.show-venue {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.8);
+		font-size: 1.05rem;
+		letter-spacing: 0.01rem;
+		text-transform: none;
+		overflow-wrap: anywhere;
+	}
+
+	.show-meta {
+		margin: 0.3rem 0 0;
+		color: rgba(255, 255, 255, 0.6);
+		text-transform: none;
+		letter-spacing: 0.01rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: 0.95rem;
+	}
+
+	.show-actions {
+		display: flex;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	.btn {
+		padding: 0.6rem 1.3rem;
+		border-radius: 8px;
+		text-decoration: none;
+		font-weight: 700;
+		font-size: 1rem;
+		text-transform: none;
+		letter-spacing: 0.02rem;
+		transition: all 0.2s ease;
+		border: 2px solid transparent;
+		cursor: pointer;
+		display: inline-block;
+		text-align: center;
+	}
+
+	.btn-tickets {
+		background: #2a2a2a;
+		color: #fff;
+		border: 2px solid #2a2a2a;
+		box-shadow: none;
+	}
+
+	.btn-tickets:hover {
+		background: #3a3a3a;
+		border-color: #3a3a3a;
+	}
+	.btn-ig {
+		background-color: transparent;
+		color: rgba(255, 255, 255, 0.8);
+		border: 2px solid rgba(255, 255, 255, 0.2);
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.btn-ig:hover {
+		border-color: rgba(255, 255, 255, 0.45);
+		color: #fff;
+	}
+
+	.ig-icon {
+		width: 22px;
+		height: 22px;
+		fill: currentColor;
+		display: block;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+		
+
+	.no-shows {
+		text-align: center;
+		padding: 3rem;
+		color: var(--muted);
+	}
+
+	.no-shows p {
+		font-size: 1.2rem;
+		margin: 0;
+	}
+
+	@keyframes row-enter {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (max-width: 768px) {
+		main {
+			min-height: calc(100vh - var(--nav-height));
+		}
+
+		.section h2 {
+			font-size: 2rem;
+		}
+
+		.show-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem 1.2rem;
+			padding: 1.2rem 1.1rem;
+			align-items: center;
+		}
+
+		.show-date-card {
+			flex: 0 0 80px;
+			width: 80px;
+			height: 80px;
+		}
+
+		.show-info {
+			flex: 1 1 180px;
+			min-width: 0;
+		}
+
+		.show-actions {
+			flex: 0 0 100%;
+			width: 100%;
+			justify-content: flex-start;
+		}
+
+		.show-actions .btn {
+			flex: 0 0 auto;
+		}
+
+		.no-shows {
+			padding: 2rem 1rem;
+		}
+	}
+</style>
+
+

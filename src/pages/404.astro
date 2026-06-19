@@ -1,0 +1,101 @@
+---
+import Logo from "../assets/minimal.svg";
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+		<title>404 - Dangerous</title>
+		<meta name="description" content="La página que buscas no existe o fue movida.">
+		<meta name="robots" content="noindex, nofollow">
+	</head>
+
+	<body>
+		<main class="not-found">
+			<Logo class="logo" aria-hidden="true" />
+			<p class="not-found-code">404</p>
+			<p class="not-found-text">Pagina no encontrada...</p>
+			<a class="home-button" href="/">Volver al inicio</a>
+		</main>
+	</body>
+</html>
+
+<style>
+	:global(html),
+	:global(body) {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		background-color: #000;
+		color: #fff;
+		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		overflow: hidden;
+	}
+
+	:global(body) {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.not-found {
+		min-height: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		padding: 24px;
+		text-align: center;
+	}
+
+	.not-found :global(.logo) {
+		width: clamp(110px, 14vw, 160px);
+		height: clamp(110px, 14vw, 160px);
+	}
+
+	.not-found-code {
+		margin: 0;
+		font-size: 2.1rem;
+		letter-spacing: 0.2rem;
+		font-family: Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+	}
+
+	.not-found-text {
+		margin: 0;
+		font-size: 0.95rem;
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	.home-button {
+		margin-top: 8px;
+		padding: 12px 24px;
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		border-radius: 999px;
+		color: #fff;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.1rem;
+		font-size: 0.85rem;
+		font-family: Impact, "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+		transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.home-button:hover,
+	.home-button:focus-visible {
+		background-color: #fff;
+		color: #000;
+		border-color: #fff;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.home-button {
+			transition: none;
+		}
+	}
+</style>
